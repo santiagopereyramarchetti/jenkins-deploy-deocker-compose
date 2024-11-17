@@ -1,0 +1,82 @@
+version: "3.8"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile.proxy
+      target: prod
+    image: santiagopereyramarchetti/proxy:1.2
+    container_name: proxy 
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - nginx
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/vue/Dockerfile.vue
+      target: prod
+    image: santiagopereyramarchetti/frontend:1.2
+    container_name: frontend
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile.nginx
+    image: santiagopereyramarchetti/nginx:1.2
+    container_name: nginx
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/laravel/Dockerfile.laravel
+      target: dev
+    image: santiagopereyramarchetti/api:1.2
+    container_name: api
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile.mysql
+    image: santiagopereyramarchetti/mysql:1.2
+    container_name: mysql
+    env_file:
+      - .env.mysql
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+
+  inicialization:
+    build:
+      context: .
+      dockerfile: ./docker/inicialization/Dockerfile
+    image: santiagopereyramarchetti/inicialization:1.2
+    container_name: inicialization
+    env_file:
+      - .env.ini
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: no
+    depends_on:
+      - mysql
+      - redis
+      - api

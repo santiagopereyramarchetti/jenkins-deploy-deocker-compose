@@ -46,6 +46,15 @@ pipeline {
 
         REMOTE_HOST = 'vagrant@192.168.10.50'
         LARAVEL_ENV = credentials('laravel-env')
+
+        // Crear docker-compose para dev
+        
+        // Instalar las dependencias necesarias para los tests
+
+        // RECORDAR REBUILDEAR LA IMAGE DE API CON TARGET EN PROD PARA PUSHEAR A DOCKERHUB
+        // YA QUE EN EL DOCKERCOMPOSE ACTUAL SE HACE EN EL TARGET DEV PARA PODER REALIZAR
+        // LOS TEST
+
     }
 
     stages{
