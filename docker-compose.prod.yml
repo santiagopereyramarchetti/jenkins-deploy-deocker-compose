@@ -1,9 +1,8 @@
 version: "3.8"
 services:
   proxy:
-    build:
-      context: .
-      dockerfile: ./docker/proxy/Dockerfile.proxy
+    image: santiagopereyramarchetti/proxy:1.2
+    container_name: proxy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -13,60 +12,52 @@ services:
       - nginx
   
   frontend:
-    build:
-      context: .
-      dockerfile: ./docker/vue/Dockerfile.vue
-      target: dev
+    image: santiagopereyramarchetti/frontend:1.2
+    container_name: frontend
     restart: unless-stopped
 
   nginx:
-    build:
-      context: .
-      dockerfile: ./docker/nginx/Dockerfile.nginx
+    image: santiagopereyramarchetti/nginx:1.2
+    container_name: nginx
     restart: unless-stopped
+    env_file:
+      - .env
     depends_on:
       - api
 
   api:
-    build:
-      context: .
-      dockerfile: ./docker/laravel/Dockerfile.laravel
-    restart: unless-stopped
+    image: santiagopereyramarchetti/api:1.2
+    container_name: api
+    env_file:
+      - .env
     depends_on:
       - mysql
       - redis
 
   mysql:
-    build:
-      context: .
-      dockerfile: ./docker/mysql/Dockerfile.mysql
+    image: santiagopereyramarchetti/mysql:1.2
+    container_name: mysql
     restart: unless-stopped
     volumes:
       - ./mysqldata:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: password
+    env_file:
+      - .env.mysql
 
   redis:
     image: redis:7-alpine
+    container_name: redis
     restart: unless-stopped
     volumes:
       - ./redisdata:/data
 
   inicialization:
-    image: docker:27.3.1-cli-alpine3.20
+    image: santiagopereyramarchetti/inicialization:1.2
+    container_name: inicialization
     restart: no
     volumes:
-      - ./docker/inicialization/init.sh:/usr/src/init.sh
       - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      DB_USER: backend
-      DB_PASSWORD: password
-      MAX_WAIT: 120
-      WAIT_INTERVAL: 10
-      MYSQL_CONTAINER_NAME: vagrant-mysql-1
-      API_CONTAINER_NAME: vagrant-api-1
-      mode: prod
-    entrypoint: ["sh","-c","chmod +x /usr/src/init.sh && /usr/src/init.sh"]
+    env_file:
+      - .env.ini
     depends_on:
       - mysql
       - redis

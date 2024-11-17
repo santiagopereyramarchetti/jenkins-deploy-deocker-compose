@@ -24,19 +24,12 @@ while true; do
     sleep "$WAIT_INTERVAL"
 done
 
-if [ "$mode" == "prod" ]; then
-  docker exec $API_CONTAINER_NAME php artisan key:generate
-  docker exec $API_CONTAINER_NAME php artisan storage:link
-  docker exec $API_CONTAINER_NAME php artisan optimize:clear
-  docker exec $API_CONTAINER_NAME php artisan down
-  docker exec $API_CONTAINER_NAME php artisan migrate --force
-  docker exec $API_CONTAINER_NAME php artisan config:cache
-  docker exec $API_CONTAINER_NAME php artisan route:cache
-  docker exec $API_CONTAINER_NAME php artisan view:cache
-  docker exec $API_CONTAINER_NAME php artisan up
-elif [ "$mode" == "dev" ]; then
-  docker exec $API_CONTAINER_NAME php artisan down
-  docker exec $API_CONTAINER_NAME php artisan storage:link
-  docker exec $API_CONTAINER_NAME php artisan migrate --force
-  docker exec $API_CONTAINER_NAME php artisan up
-fi
+docker exec $API_CONTAINER_NAME php artisan key:generate
+docker exec $API_CONTAINER_NAME php artisan storage:link
+docker exec $API_CONTAINER_NAME php artisan optimize:clear
+docker exec $API_CONTAINER_NAME php artisan down
+docker exec $API_CONTAINER_NAME php artisan migrate --force
+docker exec $API_CONTAINER_NAME php artisan config:cache
+docker exec $API_CONTAINER_NAME php artisan route:cache
+docker exec $API_CONTAINER_NAME php artisan view:cache
+docker exec $API_CONTAINER_NAME php artisan up
