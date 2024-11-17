@@ -1,0 +1,100 @@
+version: "3.8"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile.proxy
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+      - "3001:443"
+    volumes:
+      - ./docker/proxy/config/proxy.dev.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - nginx
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/vue/Dockerfile.vue
+      target: dev
+    restart: unless-stopped
+    volumes:
+      - ./frontend/public:/var/www/public
+      - ./frontend/src:/var/www/src
+      - ./frontend/package.json:/var/www/package.json
+      - ./frontend/package-lock.json:/var/www/package-lock.json
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile.nginx
+    restart: unless-stopped
+    volumes:
+      - ./backend/app:/usr/src/app
+      - ./backend/config:/usr/src/config 
+      - ./backend/database:/usr/src/database 
+      - ./backend/routes:/usr/src/routes 
+      - ./backend/storage:/usr/src/storage 
+      - ./backend/tests:/usr/src/test 
+      - ./backend/composer.json:/usr/src/composer.json 
+      - ./backend/composer.lock:/usr/src/composer.lock 
+      - ./backend/.env:/usr/src/.env
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/laravel/Dockerfile.laravel
+    restart: unless-stopped
+    volumes:
+      - ./backend/app:/usr/src/app
+      - ./backend/config:/usr/src/config 
+      - ./backend/database:/usr/src/database 
+      - ./backend/routes:/usr/src/routes 
+      - ./backend/storage:/usr/src/storage 
+      - ./backend/tests:/usr/src/test 
+      - ./backend/composer.json:/usr/src/composer.json 
+      - ./backend/composer.lock:/usr/src/composer.lock 
+      - ./backend/.env:/usr/src/.env
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile.mysql
+    restart: unless-stopped
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - ./redisdata:/data
+
+  inicialization:
+    image: docker:27.3.1-cli-alpine3.20
+    restart: no
+    volumes:
+      - ./docker/inicialization/init.sh:/usr/src/init.sh
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DB_USER: backend
+      DB_PASSWORD: password
+      MAX_WAIT: 120
+      WAIT_INTERVAL: 10
+      MYSQL_CONTAINER_NAME: vagrant-mysql-1
+      API_CONTAINER_NAME: vagrant-api-1
+      mode: dev
+    entrypoint: ["sh","-c","chmod +x /usr/src/init.sh && /usr/src/init.sh"]
+    depends_on:
+      - mysql
+      - redis
+      - api
