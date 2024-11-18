@@ -3,10 +3,10 @@ services:
   proxy:
     build:
       context: .
-      dockerfile: ${PROXY_DOCKERFILE_PATH}
+      dockerfile: ./docker/proxy/Dockerfile.proxy
       target: prod
-    image: ${PROXY_IMAGE_NAME}
-    container_name: ${PROXY_CONTAINER_NAME}
+    image: santiagopereyramarchetti/proxy:1.2
+    container_name: proxy 
     ports:
       - "80:80"
       - "443:443"
@@ -18,18 +18,18 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ${FRONTEND_DOCKERFILE_PATH}
+      dockerfile: ./docker/vue/Dockerfile.vue
       target: prod
-    image: ${FRONTEND_IMAGE_NAME}
-    container_name: ${FRONTEND_CONTAINER_NAME}
+    image: santiagopereyramarchetti/frontend:1.2
+    container_name: frontend
     restart: unless-stopped
 
   nginx:
     build:
       context: .
-      dockerfile: ${NGINX_DOCKERFILE_PATH}
-    image: ${NGINX_IMAGE_NAME}
-    container_name: ${NGINX_CONTAINER_NAME}
+      dockerfile: ./docker/nginx/Dockerfile.nginx
+    image: santiagopereyramarchetti/nginx:1.2
+    container_name: nginx
     env_file:
       - .env
     restart: unless-stopped
@@ -39,10 +39,10 @@ services:
   api:
     build:
       context: .
-      dockerfile: ${API_DOCKERFILE_PATH}
+      dockerfile: ./docker/laravel/Dockerfile.laravel
       target: dev
-    image: ${API_IMAGE_NAME}
-    container_name: ${API_CONTAINER_NAME}
+    image: santiagopereyramarchetti/api:1.2
+    container_name: api
     env_file:
       - .env
     restart: unless-stopped
@@ -53,24 +53,24 @@ services:
   mysql:
     build:
       context: .
-      dockerfile: ${MYSQL_DOCKERFILE_PATH}
-    image: ${MYSQL_IMAGE_NAME}
-    container_name: ${MYSQL_CONTAINER_NAME}
+      dockerfile: ./docker/mysql/Dockerfile.mysql
+    image: santiagopereyramarchetti/mysql:1.2
+    container_name: mysql
     env_file:
       - .env.mysql
     restart: unless-stopped
 
   redis:
-    image: ${REDIS_IMAGE_NAME}
-    container_name: ${REDIS_CONTAINER_NAME}
+    image: redis:7-alpine
+    container_name: redis
     restart: unless-stopped
 
   inicialization:
     build:
       context: .
-      dockerfile: ${INICIALIZATION_DOCKERFILE_PATH}
-    image: ${INICIALIZATION_IMAGE_NAME}
-    container_name: ${INICIALIZATION_CONTAINER_NAME}
+      dockerfile: ./docker/inicialization/Dockerfile
+    image: santiagopereyramarchetti/inicialization:1.2
+    container_name: inicialization
     env_file:
       - .env.ini
     volumes:

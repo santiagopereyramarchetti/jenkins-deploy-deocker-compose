@@ -1,0 +1,114 @@
+version: "3.8"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile.proxy
+      target: dev
+    image: santiagopereyramarchetti/proxy:1.2
+    container_name: proxy
+    ports:
+      - "3000:80"
+      - "3001:443"
+    volumes:
+      - ./docker/proxy/config/proxy.dev.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - nginx
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/vue/Dockerfile.vue
+      target: dev
+    image: santiagopereyramarchetti/frontend:1.2
+    container_name: frontend
+    volumes:
+      - ./frontend/public:/var/www/public
+      - ./frontend/src:/var/www/src
+      - ./frontend/package.json:/var/www/package.json
+      - ./frontend/package-lock.json:/var/www/package-lock.json
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile.nginx
+    image: santiagopereyramarchetti/nginx:1.2
+    container_name: nginx
+    volumes:
+      - ./backend/app:/usr/src/app
+      - ./backend/config:/usr/src/config 
+      - ./backend/database:/usr/src/database 
+      - ./backend/routes:/usr/src/routes 
+      - ./backend/storage:/usr/src/storage 
+      - ./backend/tests:/usr/src/test 
+      - ./backend/composer.json:/usr/src/composer.json 
+      - ./backend/composer.lock:/usr/src/composer.lock 
+      - ./backend/.env:/usr/src/.env
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/laravel/Dockerfile.laravel
+      target: dev
+    image: santiagopereyramarchetti/api:1.2
+    container_name: api
+    volumes:
+      - ./backend/app:/usr/src/app
+      - ./backend/config:/usr/src/config 
+      - ./backend/database:/usr/src/database 
+      - ./backend/routes:/usr/src/routes 
+      - ./backend/storage:/usr/src/storage 
+      - ./backend/tests:/usr/src/test 
+      - ./backend/composer.json:/usr/src/composer.json 
+      - ./backend/composer.lock:/usr/src/composer.lock 
+      - ./backend/.env:/usr/src/.env
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile.mysql
+    image: santiagopereyramarchetti/mysql:1.2
+    container_name: mysql
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    volumes:
+      - ./redisdata:/data
+    restart: unless-stopped
+
+  inicialization:
+    build:
+      context: .
+      dockerfile: ./docker/inicialization/Dockerfile
+    image: santiagopereyramarchetti/inicialization:1.2
+    container_name: inicialization
+    environment:
+      DB_USER: backend
+      DB_PASSWORD: password
+      MAX_WAIT: 120
+      WAIT_INTERVAL: 10
+      MYSQL_CONTAINER_NAME: mysql
+      API_CONTAINER_NAME: api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: no
+    depends_on:
+      - mysql
+      - redis
+      - api
