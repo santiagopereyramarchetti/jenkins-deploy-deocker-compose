@@ -154,8 +154,8 @@ pipeline {
     post{
         always{
             script{
-                sh 'docker compose -f docker-compose.prod.yml down || true' 
-                sh 'docker compose -f docker-compose.ci.yml down || true'
+                sh 'docker compose -f docker-compose.prod.yml down -v || true' 
+                sh 'docker compose -f docker-compose.ci.yml down -v || true'
 
                 sh 'docker rmi -f ${API_IMAGE_NAME} || true'
                 sh 'docker rmi -f ${MYSQL_IMAGE_NAME} || true'
@@ -164,6 +164,8 @@ pipeline {
                 sh 'docker rmi -f ${PROXY_IMAGE_NAME} || true'
                 sh 'docker rmi -f ${NGINX_IMAGE_NAME} || true'
                 sh 'docker rmi -f ${INICIALIZATION_IMAGE_NAME} || true'
+
+                cleanWs()
             }
         }
     }
