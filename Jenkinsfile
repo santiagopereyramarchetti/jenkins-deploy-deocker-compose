@@ -53,9 +53,9 @@ pipeline {
         stage('Preparando environment para la pipeline'){
             steps{
                 script{
-                    writeFile file: '.env', text: LARAVEL_ENV
-                    writeFile file: '.env.mysql', text: MYSQL_ENV
-                    writeFile file: '.env.ini', text: INIT_ENV
+                    writeFile file: '.env', text: readFile(LARAVEL_ENV)
+                    writeFile file: '.env.mysql', text: readFile(MYSQL_ENV)
+                    writeFile file: '.env.ini', text: readFile(INIT_ENV)
                     sh 'docker compose -f docker-compose.ci.yml up -d'
                 }
             }
