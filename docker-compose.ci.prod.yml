@@ -1,0 +1,82 @@
+version: "3.8"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ${PROXY_DOCKERFILE_PATH}
+      target: prod
+    image: ${PROXY_IMAGE_NAME}
+    container_name: ${PROXY_CONTAINER_NAME}
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - nginx
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: ${FRONTEND_DOCKERFILE_PATH}
+      target: prod
+    image: ${FRONTEND_IMAGE_NAME}
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ${NGINX_DOCKERFILE_PATH}
+    image: ${NGINX_IMAGE_NAME}
+    container_name: ${NGINX_CONTAINER_NAME}
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: ${API_DOCKERFILE_PATH}
+      target: prod
+    image: ${API_IMAGE_NAME}
+    container_name: ${API_CONTAINER_NAME}
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ${MYSQL_DOCKERFILE_PATH}
+    image: ${MYSQL_IMAGE_NAME}
+    container_name: ${MYSQL_CONTAINER_NAME}
+    env_file:
+      - .env.mysql
+    restart: unless-stopped
+
+  redis:
+    image: ${REDIS_IMAGE_NAME}
+    container_name: ${REDIS_CONTAINER_NAME}
+    restart: unless-stopped
+
+  inicialization:
+    build:
+      context: .
+      dockerfile: ${INICIALIZATION_DOCKERFILE_PATH}
+    image: ${INICIALIZATION_IMAGE_NAME}
+    container_name: ${INICIALIZATION_CONTAINER_NAME}
+    env_file:
+      - .env.ini
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: no
+    depends_on:
+      - mysql
+      - redis
+      - api

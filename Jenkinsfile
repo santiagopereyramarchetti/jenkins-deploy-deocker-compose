@@ -27,7 +27,7 @@ pipeline {
         PROXY_CONTAINER_NAME = "proxy"
 
         INICIALIZATION_IMAGE_NAME = "santiagopereyramarchetti/inicialization:1.2"
-        INICIALIZATION_DOCKERFILE_PATH = "./docker/proxy/Dockerfile"
+        INICIALIZATION_DOCKERFILE_PATH = "./docker/inicialization/Dockerfile"
         INICIALIZATION_CONTAINER_NAME = "inicialization"
 
         REDIS_IMAGE_NAME = "redis:7-alpine"
@@ -91,7 +91,7 @@ pipeline {
         stage('Buildeando images para prod'){
             steps{
                 script{
-                    sh 'docker compose -f docker-compose.prod.yml build --no-cache'
+                    sh 'docker compose -f docker-compose.ci.prod.yml build --no-cache api'
                 }
             }
         }
