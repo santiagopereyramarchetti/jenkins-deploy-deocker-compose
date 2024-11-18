@@ -46,10 +46,6 @@ pipeline {
         stage('Buildeando images para testing'){
             steps{
                 script{
-                    writeFile file: '.env', text: LARAVEL_ENV
-                    writeFile file: '.env.mysql', text: MYSQL_ENV
-                    writeFile file: '.env.ini', text: INIT_ENV
-
                     sh 'docker compose -f docker-compose.ci.yml build --no-cache'
                 }
             }
@@ -57,7 +53,10 @@ pipeline {
         stage('Preparando environment para la pipeline'){
             steps{
                 script{
-                   sh 'docker compose -f docker-compose.ci.yml up -d'
+                    writeFile file: '.env', text: LARAVEL_ENV
+                    writeFile file: '.env.mysql', text: MYSQL_ENV
+                    writeFile file: '.env.ini', text: INIT_ENV
+                    sh 'docker compose -f docker-compose.ci.yml up -d'
                 }
             }
         }
