@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+    triggers {
+        cron('H 0 * * *')
+    }
+    stages{
+        stage('Mantenimiento Docker y Apt'){
+            steps{
+                script{
+                    sh '''
+                        docker system prune -af
+                    '''
+                        //Ojo al incluir esto, el container debe tener sudo o ejecutarse
+                        //con usuario root
+                        // sudo apt-get clean
+                        // sudo apt-get autoclean
+                        // sudo apt-get autoremove -y
+                }
+            }
+        }
+    }
+}
