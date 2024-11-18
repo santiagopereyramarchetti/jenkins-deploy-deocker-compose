@@ -24,7 +24,6 @@ while true; do
     sleep "$WAIT_INTERVAL"
 done
 
-docker exec $API_CONTAINER_NAME php artisan key:generate
 docker exec $API_CONTAINER_NAME php artisan storage:link
 docker exec $API_CONTAINER_NAME php artisan optimize:clear
 docker exec $API_CONTAINER_NAME php artisan down
