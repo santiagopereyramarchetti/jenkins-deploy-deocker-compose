@@ -121,6 +121,8 @@ pipeline {
             steps{
                 sshagent(credentials: ['onpremise-vps']){
                     sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'rm -rf ~/.env && rm -rf ~/.env.mysql && rm -rf ~/.env.ini && rm -rf ~/docker-compose.yml'
+
                         scp -o StrictHostKeyChecking=no ${LARAVEL_ENV} ${REMOTE_HOST}:~/.env
                         scp -o StrictHostKeyChecking=no ${MYSQL_ENV} ${REMOTE_HOST}:~/.env.mysql
                         scp -o StrictHostKeyChecking=no ${INIT_ENV} ${REMOTE_HOST}:~/.env.ini
