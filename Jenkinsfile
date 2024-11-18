@@ -122,12 +122,12 @@ pipeline {
                 sshagent(credentials: ['onpremise-vps']){
                     sh '''
                         ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'rm -rf ~/.env && rm -rf ~/.env.mysql && rm -rf ~/.env.ini && rm -rf ~/docker-compose.yml'
-
+    
                         scp -o StrictHostKeyChecking=no ${LARAVEL_ENV} ${REMOTE_HOST}:~/.env
                         scp -o StrictHostKeyChecking=no ${MYSQL_ENV} ${REMOTE_HOST}:~/.env.mysql
                         scp -o StrictHostKeyChecking=no ${INIT_ENV} ${REMOTE_HOST}:~/.env.ini
                         scp -o StrictHostKeyChecking=no ./docker-compose.prod.yml ${REMOTE_HOST}:~/docker-compose.yml
-
+    
                         ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} "export MYSQL_IMAGE_NAME='${MYSQL_IMAGE_NAME}' \
                             export MYSQL_CONTAINER_NAME='${MYSQL_CONTAINER_NAME}' \
                             export API_IMAGE_NAME='${API_IMAGE_NAME}' \
@@ -141,9 +141,8 @@ pipeline {
                             export INICIALIZATION_IMAGE_NAME='${INICIALIZATION_IMAGE_NAME}' \
                             export INICIALIZATION_CONTAINER_NAME='${INICIALIZATION_CONTAINER_NAME}' \
                             export REDIS_IMAGE_NAME='${REDIS_IMAGE_NAME}' \
-                            export REDIS_CONTAINER_NAME='${REDIS_CONTAINER_NAME}'"
-
-                        ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} "docker compose -f ~/docker-compose.yml up -d"
+                            export REDIS_CONTAINER_NAME='${REDIS_CONTAINER_NAME}' \
+                            && docker compose -f ~/docker-compose.yml up -d"
                     '''
                 }
             }
