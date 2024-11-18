@@ -46,6 +46,10 @@ pipeline {
         stage('Buildeando images para testing'){
             steps{
                 script{
+                    writeFile file: '.env', text: LARAVEL_ENV
+                    writeFile file: '.env.mysql', text: MYSQL_ENV
+                    writeFile file: '.env.ini', text: INIT_ENV
+
                     sh 'docker compose -f docker-compose.ci.yml build --no-cache'
                 }
             }
@@ -119,7 +123,7 @@ pipeline {
                     sh '''
                         scp -o StrictHostKeyChecking=no ${LARAVEL_ENV} ${REMOTE_HOST}:~/.env
                         scp -o StrictHostKeyChecking=no ${MYSQL_ENV} ${REMOTE_HOST}:~/.env.mysql
-                        scp -o StrictHostKeyChecking=no ${INI_ENV} ${REMOTE_HOST}:~/.env.ini
+                        scp -o StrictHostKeyChecking=no ${INIT_ENV} ${REMOTE_HOST}:~/.env.ini
                         scp -o StrictHostKeyChecking=no ./docker-compose.prod.yml ${REMOTE_HOST}:~/docker-compose.yml
 
                         ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} "export MYSQL_IMAGE_NAME='${MYSQL_IMAGE_NAME}' \
