@@ -57,6 +57,7 @@ pipeline {
                     writeFile file: '.env.mysql', text: readFile(MYSQL_ENV)
                     writeFile file: '.env.ini', text: readFile(INIT_ENV)
                     sh 'docker compose -f docker-compose.ci.yml up -d'
+                    sh 'docker wait inicialization'
                 }
             }
         }
