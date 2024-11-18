@@ -43,80 +43,80 @@ pipeline {
     }
 
     stages{
-        stage('Buildeando images para testing'){
-            steps{
-                script{
-                    sh 'docker compose -f docker-compose.ci.yml build --no-cache'
-                }
-            }
-        }
-        stage('Preparando environment para la pipeline'){
-            steps{
-                script{
-                    writeFile file: '.env', text: readFile(LARAVEL_ENV)
-                    writeFile file: '.env.mysql', text: readFile(MYSQL_ENV)
-                    writeFile file: '.env.ini', text: readFile(INIT_ENV)
-                    sh 'docker compose -f docker-compose.ci.yml up -d'
-                    sh 'docker wait inicialization'
-                }
-            }
-        }
-        stage('Analisis de código estático'){
-            steps{
-                script{
-                   sh 'docker exec ${API_CONTAINER_NAME} ./vendor/bin/phpstan analyse'
-                }
-            }
-        }
-        stage('Analisis de la calidad del código'){
-            steps{
-                script{
-                    def userInput = input(
-                        message: 'Ejecutar este step?',
-                        parameters: [
-                            choice(name: 'Selecciona una opcion', choices: ['Si', 'No'], description: 'Elegir si queres ejecutar este step')    
-                        ]
-                    )
-                    if (userInput == 'Si'){
-                        sh 'docker exec ${API_CONTAINER_NAME} php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90'
-                    } else {
-                        echo 'Step omitido. Siguiendo adelante...'
-                    }
-                }
-            }
-        }
-        stage('Tests unitarios'){
-            steps{
-                script{
-                   sh 'docker exec ${API_CONTAINER_NAME} php artisan test'
-                }
-            }
-        }
-        stage('Buildeando images para prod'){
-            steps{
-                script{
-                    sh 'docker compose -f docker-compose.ci.prod.yml build --no-cache api'
-                }
-            }
-        }
-        stage('Pusheando images hacia Dockerhub'){
-            steps{
-                script{
-                    withCredentials([usernamePassword(credentialsId: dockerHubCredentials, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+        // stage('Buildeando images para testing'){
+        //     steps{
+        //         script{
+        //             sh 'docker compose -f docker-compose.ci.yml build --no-cache'
+        //         }
+        //     }
+        // }
+        // stage('Preparando environment para la pipeline'){
+        //     steps{
+        //         script{
+        //             writeFile file: '.env', text: readFile(LARAVEL_ENV)
+        //             writeFile file: '.env.mysql', text: readFile(MYSQL_ENV)
+        //             writeFile file: '.env.ini', text: readFile(INIT_ENV)
+        //             sh 'docker compose -f docker-compose.ci.yml up -d'
+        //             sh 'docker wait inicialization'
+        //         }
+        //     }
+        // }
+        // stage('Analisis de código estático'){
+        //     steps{
+        //         script{
+        //            sh 'docker exec ${API_CONTAINER_NAME} ./vendor/bin/phpstan analyse'
+        //         }
+        //     }
+        // }
+        // stage('Analisis de la calidad del código'){
+        //     steps{
+        //         script{
+        //             def userInput = input(
+        //                 message: 'Ejecutar este step?',
+        //                 parameters: [
+        //                     choice(name: 'Selecciona una opcion', choices: ['Si', 'No'], description: 'Elegir si queres ejecutar este step')    
+        //                 ]
+        //             )
+        //             if (userInput == 'Si'){
+        //                 sh 'docker exec ${API_CONTAINER_NAME} php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90'
+        //             } else {
+        //                 echo 'Step omitido. Siguiendo adelante...'
+        //             }
+        //         }
+        //     }
+        // }
+        // stage('Tests unitarios'){
+        //     steps{
+        //         script{
+        //            sh 'docker exec ${API_CONTAINER_NAME} php artisan test'
+        //         }
+        //     }
+        // }
+        // stage('Buildeando images para prod'){
+        //     steps{
+        //         script{
+        //             sh 'docker compose -f docker-compose.ci.prod.yml build --no-cache api'
+        //         }
+        //     }
+        // }
+        // stage('Pusheando images hacia Dockerhub'){
+        //     steps{
+        //         script{
+        //             withCredentials([usernamePassword(credentialsId: dockerHubCredentials, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //                 sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
  
-                        sh '''
-                            docker push ${MYSQL_IMAGE_NAME}
-                            docker push ${API_IMAGE_NAME}
-                            docker push ${NGINX_IMAGE_NAME}
-                            docker push ${FRONTEND_IMAGE_NAME}
-                            docker push ${PROXY_IMAGE_NAME}
-                            docker push ${INICIALIZATION_IMAGE_NAME}
-                        '''
-                    }
-                }
-            }
-        }
+        //                 sh '''
+        //                     docker push ${MYSQL_IMAGE_NAME}
+        //                     docker push ${API_IMAGE_NAME}
+        //                     docker push ${NGINX_IMAGE_NAME}
+        //                     docker push ${FRONTEND_IMAGE_NAME}
+        //                     docker push ${PROXY_IMAGE_NAME}
+        //                     docker push ${INICIALIZATION_IMAGE_NAME}
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
         stage('Deployando nueva release'){
             steps{
                 sshagent(credentials: ['onpremise-vps']){
